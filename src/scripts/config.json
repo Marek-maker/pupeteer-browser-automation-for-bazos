@@ -1,5 +1,5 @@
 {
   "url": "https://bazos.sk",
-  "category": "PC",
+  "advertDataFile": "assets\\adverts\\demo-advert.json",
   "phoneRegistrationPhrase": "Pre pokračovanie je potrebné overiť telefónne číslo"
 }

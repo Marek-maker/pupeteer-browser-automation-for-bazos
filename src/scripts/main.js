@@ -19,7 +19,7 @@ async function main(configPath) {
         process.exit(1);
     }
     const url = config.url;
-    const category = config.category;
+    const advertDataFile = config.advertDataFile;
     const phoneRegistrationPhrase = config.phoneRegistrationPhrase || 'Pre pokračovanie je potrebné overiť telefónne číslo';
     if (!phoneRegistrationPhrase) {
         console.error('No PhoneRegPhrase specified in config.');
@@ -29,6 +29,19 @@ async function main(configPath) {
         console.error('No URL specified in config.');
         process.exit(1);
     }
+    if (!advertDataFile) {
+        console.error('No advertDataFile specified in config.');
+        process.exit(1);
+    }
+    // Load advert data
+    let advertData = {};
+    try {
+        advertData = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../', advertDataFile), 'utf8'));
+    } catch (e) {
+        console.error(`Failed to read advert data file at ${advertDataFile}:`, e);
+        process.exit(1);
+    }
+    const category = advertData.kategoria;
     const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
     await page.goto(url);

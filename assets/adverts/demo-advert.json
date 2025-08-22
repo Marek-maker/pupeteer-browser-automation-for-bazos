@@ -3,20 +3,18 @@
   "cena": 850,
   "mena": "EUR",
   "popis": "Na predaj výkonná herná PC zostava vhodná na najnovšie hry aj prácu. Zostava obsahuje procesor Intel i7, 16GB RAM, SSD 1TB, grafickú kartu NVIDIA RTX 3060, a je v perfektnom stave. Možnosť osobného odberu v Bratislave.",
-  "kategoria": "pc_na_predaj",
+  "kategoria": "PC",
   "lokalita": {
     "mesto": "Bratislava",
     "ulica": "Technická",
     "cislo_domu": "5"
   },
   "obrazky": [
-    "https://example.com/images/pc_foto1.jpg",
-    "https://example.com/images/pc_foto2.jpg",
-    "https://example.com/images/pc_foto3.jpg"
+    "assets\\imgs\\demo-advert-PC.jpg"
   ],
   "kontaktne_udaje": {
     "meno": "Peter Horváth",
     "email": "peter.horvath@example.com",
-    "telefon": "+421911XXXXXX"
+    "telefon": "+421911234567"
   }
 }
