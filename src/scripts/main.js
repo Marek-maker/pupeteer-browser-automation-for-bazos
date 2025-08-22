@@ -18,9 +18,13 @@ async function main(configPath) {
         console.error(`Failed to read config file at ${resolvedPath}:`, e);
         process.exit(1);
     }
-    const url = config.url;
+    let url = config.url;
     const advertDataFile = config.advertDataFile;
     const phoneRegistrationPhrase = config.phoneRegistrationPhrase || 'Pre pokračovanie je potrebné overiť telefónne číslo';
+    const delayMs = config.delayMs || 1000;
+    function delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
     if (!phoneRegistrationPhrase) {
         console.error('No PhoneRegPhrase specified in config.');
         process.exit(1);
@@ -42,17 +46,23 @@ async function main(configPath) {
         process.exit(1);
     }
     const category = advertData.kategoria;
+    url = config.url.substring(0, 8) + category +"."+ config.url.substring(8);//edit the url to nav to the category page
+
+    // Launch Puppeteer and perform actions
     const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
     await page.goto(url);
+    console.log(`Navigated to URL: ${url}`);
+    await delay(delayMs);
     await dismissCookies(page);
+    console.log('Dismissed cookies (if present).');
+    await delay(delayMs);
     const [response] = await Promise.all([
         page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 10000 }),
         clickAddAd(page)
     ]);
-    if (category) {
-        await selectCategory(page, category);
-    }
+    console.log('Clicked "Pridať inzerát" and waited for navigation.');
+    await delay(delayMs);
     // Check if phone registration is required
     const requires_phone_registration = await checkPhoneRegistration(page, phoneRegistrationPhrase);
     console.log(`Requires phone registration: ${requires_phone_registration}`);

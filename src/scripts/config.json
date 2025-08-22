@@ -1,5 +1,6 @@
 {
   "url": "https://bazos.sk",
   "advertDataFile": "assets\\adverts\\demo-advert.json",
-  "phoneRegistrationPhrase": "Pre pokračovanie je potrebné overiť telefónne číslo"
+  "phoneRegistrationPhrase": "Pre pokračovanie je potrebné overiť telefónne číslo",
+  "delayMs": 1500
 }
