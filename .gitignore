@@ -1,7 +1,23 @@
 # Ignore Python cache
 __pycache__/
 *.pyc
+
 # Ignore node_modules
 node_modules/
+
 # Ignore environment files
 .env
+
+# Browser user data
+user_data/
+*/user_data/
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS specific files
+.DS_Store
+Thumbs.db

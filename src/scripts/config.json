@@ -2,5 +2,9 @@
   "url": "https://bazos.sk",
   "advertDataFile": "assets\\adverts\\demo-advert.json",
   "phoneRegistrationPhrase": "Pred pridaním inzerátu je nutné overenie mobilného telefónu", 
-  "allowContinueText": "Prosím pravdivo vyplňte tento formulár. Vybraním správnej kategórie zvýšite efektívnosť vášho inzerátu."
+  "allowContinueText": "Prosím pravdivo vyplňte tento formulár. Vybraním správnej kategórie zvýšite efektívnosť vášho inzerátu.",
+  "browser": {
+    "usePersistentProfile": true,
+    "userDataDir": "user_data"
+  }
 }

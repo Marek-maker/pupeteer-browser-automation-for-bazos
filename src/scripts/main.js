@@ -5,6 +5,9 @@ const dismissCookies = require('./dismiss-cookies');
 const clickAddAd = require('./click-add-ad');
 const selectCategory = require('./select-category');
 const checkPhoneRegistration = require('./check-phone-registration');
+const fillAdvertForm = require('./fill-advert-form');
+const generatePassword = require('./generate-password');
+const submitAndVerify = require('./submit-and-verify');
 const fs = require('fs');
 const path = require('path');
 
@@ -42,16 +45,44 @@ async function main(configPath) {
     let advertData = {};
     try {
         advertData = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../', advertDataFile), 'utf8'));
+        // Generate password if not present
+        if (!advertData.heslobazar) {
+            advertData.heslobazar = generatePassword();
+            // Save the generated password back to the file
+            fs.writeFileSync(
+                path.resolve(__dirname, '../../', advertDataFile),
+                JSON.stringify(advertData, null, 2),
+                'utf8'
+            );
+            console.log('Generated and saved new password:', advertData.heslobazar);
+        }
     } catch (e) {
-        console.error(`Failed to read advert data file at ${advertDataFile}:`, e);
+        console.error(`Failed to read or update advert data file at ${advertDataFile}:`, e);
         process.exit(1);
     }
     const category = advertData.kategoria;
     // Build direct URL to add advert page for the category
     const addAdvertUrl = `https://${category}.bazos.sk/pridat-inzerat.php`;
 
-    // Launch Puppeteer and perform actions
-    const browser = await puppeteer.launch({ headless: false });
+    // Configure browser launch options
+    const browserConfig = config.browser || {};
+    let launchOptions = { 
+        headless: false
+    };
+
+    // Set up persistent profile if configured
+    if (browserConfig.usePersistentProfile) {
+        const userDataDir = path.join(__dirname, '../../', browserConfig.userDataDir || 'user_data');
+        console.log('Using persistent profile at:', userDataDir);
+        if (!fs.existsSync(userDataDir)){
+            fs.mkdirSync(userDataDir, { recursive: true });
+        }
+        launchOptions.userDataDir = userDataDir;
+    } else {
+        console.log('Using temporary browser profile');
+    }
+
+    const browser = await puppeteer.launch(launchOptions);
     const page = await browser.newPage();
     await page.goto(addAdvertUrl);
     console.log(`Navigated directly to add advert page: ${addAdvertUrl}`);
@@ -67,7 +98,7 @@ async function main(configPath) {
         console.log('Phone registration required. Please complete verification manually.');
         let found = false;
         let attempts = 0;
-        while (!found && attempts < 60) { // Wait up to 60 attempts (about 1.5 min)
+        while (!found && attempts < 120) { // Wait up to 120 attempts (about 3 min)
             await delay(delayMs);
             const pageText = await page.evaluate(() => document.body.innerText);
             if (pageText.includes(allowContinueText)) {
@@ -83,7 +114,18 @@ async function main(configPath) {
             return;
         }
     }
-    // Continue with next steps here...
+    // Fill out the advertisement form
+    await fillAdvertForm(page, advertData);
+    console.log('Form filled with advertisement data.');
+
+    // Submit the form and verify success
+    const submissionSuccess = await submitAndVerify(page);
+    if (submissionSuccess) {
+        console.log('Advertisement successfully submitted and verified.');
+    } else {
+        console.error('Advertisement submission failed or could not be verified.');
+        process.exit(1);
+    }
 }
 
 // Usage: node main.js [configPath]
