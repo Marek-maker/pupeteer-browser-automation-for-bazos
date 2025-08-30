@@ -22,6 +22,7 @@ async function main(configPath) {
     const advertDataFile = config.advertDataFile;
     const phoneRegistrationPhrase = config.phoneRegistrationPhrase || 'Pre pokračovanie je potrebné overiť telefónne číslo';
     const delayMs = config.delayMs || 1000;
+    const allowContinueText = config.allowContinueText || '';
     function delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
@@ -46,27 +47,43 @@ async function main(configPath) {
         process.exit(1);
     }
     const category = advertData.kategoria;
-    url = config.url.substring(0, 8) + category +"."+ config.url.substring(8);//edit the url to nav to the category page
+    // Build direct URL to add advert page for the category
+    const addAdvertUrl = `https://${category}.bazos.sk/pridat-inzerat.php`;
 
     // Launch Puppeteer and perform actions
     const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
-    await page.goto(url);
-    console.log(`Navigated to URL: ${url}`);
+    await page.goto(addAdvertUrl);
+    console.log(`Navigated directly to add advert page: ${addAdvertUrl}`);
     await delay(delayMs);
     await dismissCookies(page);
     console.log('Dismissed cookies (if present).');
     await delay(delayMs);
-    const [response] = await Promise.all([
-        page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 10000 }),
-        clickAddAd(page)
-    ]);
-    console.log('Clicked "Pridať inzerát" and waited for navigation.');
-    await delay(delayMs);
     // Check if phone registration is required
     const requires_phone_registration = await checkPhoneRegistration(page, phoneRegistrationPhrase);
     console.log(`Requires phone registration: ${requires_phone_registration}`);
-    // Keep browser open for manual inspection
+
+    if (requires_phone_registration && allowContinueText) {
+        console.log('Phone registration required. Please complete verification manually.');
+        let found = false;
+        let attempts = 0;
+        while (!found && attempts < 60) { // Wait up to 60 attempts (about 1.5 min)
+            await delay(delayMs);
+            const pageText = await page.evaluate(() => document.body.innerText);
+            if (pageText.includes(allowContinueText)) {
+                found = true;
+                console.log('Phone verification complete. Continue automation.');
+            } else {
+                console.log(`Waiting for confirmation text: '${allowContinueText}' (attempt ${attempts+1})`);
+            }
+            attempts++;
+        }
+        if (!found) {
+            console.log('Confirmation text not found. Automation will not continue.');
+            return;
+        }
+    }
+    // Continue with next steps here...
 }
 
 // Usage: node main.js [configPath]

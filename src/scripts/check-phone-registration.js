@@ -17,51 +17,80 @@ async function checkPhoneRegistration(page, phrase) {
     console.log('---[checkPhoneRegistration]---');
     console.log('Phrase to search:', phrase);
 
-    // Approach 1: document.body.innerText
-    const bodyText = await page.evaluate(() => document.body.innerText);
-    console.log('Approach 1 - innerText (first 500 chars):', bodyText.slice(0, 500));
-
-    // Approach 2: document.body.innerHTML (strip tags)
-    const bodyHTML = await page.evaluate(() => document.body.innerHTML);
-    const htmlStripped = bodyHTML.replace(/<[^>]*>/g, ' ');
-    console.log('Approach 2 - HTML stripped (first 500 chars):', htmlStripped.slice(0, 500));
-
-    // Approach 3: All visible text nodes
-    const allTextNodes = await page.evaluate(() => {
-        function getTextNodes(node) {
-            let text = '';
-            if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
-                text += node.textContent + ' ';
-            }
-            for (let child of node.childNodes) {
-                text += getTextNodes(child);
-            }
-            return text;
+    // Get all visible text using different approaches
+    const result = await page.evaluate((searchPhrase) => {
+        function normalizeText(text) {
+            return text
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
         }
-        return getTextNodes(document.body);
-    });
-    console.log('Approach 3 - All text nodes (first 500 chars):', allTextNodes.slice(0, 500));
 
-    // Normalize and search in all approaches
-    const normPhrase = normalizeText(phrase);
-    const normBody = normalizeText(bodyText);
-    const normHTML = normalizeText(htmlStripped);
-    const normAllText = normalizeText(allTextNodes);
+        const normalizedPhrase = normalizeText(searchPhrase);
+        let found = false;
+        let foundMethod = '';
 
-    let found = false;
-    let foundWhere = '';
-    if (normBody.includes(normPhrase)) {
-        found = true;
-        foundWhere = 'innerText';
-    } else if (normHTML.includes(normPhrase)) {
-        found = true;
-        foundWhere = 'HTML stripped';
-    } else if (normAllText.includes(normPhrase)) {
-        found = true;
-        foundWhere = 'All text nodes';
+        // Method 1: Check using querySelector with XPath-like search
+        const allElements = document.querySelectorAll('*');
+        for (const element of allElements) {
+            if (element.offsetParent !== null) { // Check if element is visible
+                const text = normalizeText(element.textContent);
+                if (text.includes(normalizedPhrase)) {
+                    found = true;
+                    foundMethod = 'querySelector';
+                    break;
+                }
+            }
+        }
+
+        // Method 2: Use native browser find if available
+        if (!found && window.find && typeof window.find === 'function') {
+            try {
+                found = window.find(searchPhrase, false, false, true, false, false, false);
+                if (found) foundMethod = 'window.find';
+            } catch (e) {
+                console.error('window.find failed:', e);
+            }
+        }
+
+        // Method 3: Direct text node search
+        if (!found) {
+            const walk = document.createTreeWalker(
+                document.body,
+                NodeFilter.SHOW_TEXT,
+                {
+                    acceptNode: function(node) {
+                        return node.parentElement.offsetParent !== null
+                            ? NodeFilter.FILTER_ACCEPT
+                            : NodeFilter.FILTER_REJECT;
+                    }
+                }
+            );
+
+            while (walk.nextNode()) {
+                const text = normalizeText(walk.currentNode.textContent);
+                if (text.includes(normalizedPhrase)) {
+                    found = true;
+                    foundMethod = 'TreeWalker';
+                    break;
+                }
+            }
+        }
+
+        return { found, method: foundMethod };
+    }, phrase);
+
+    console.log('Search result:', result);
+    console.log(`requires_phone_registration: ${result.found}`);
+    if (result.found) {
+        console.log('Phrase found using method:', result.method);
+    } else {
+        console.log('Phrase not found using any method');
     }
 
-    console.log('Normalized phrase:', normPhrase);
+    return result.found;
     console.log(`requires_phone_registration: ${found}`);
     if (found) {
         console.log('Phrase found in:', foundWhere);
