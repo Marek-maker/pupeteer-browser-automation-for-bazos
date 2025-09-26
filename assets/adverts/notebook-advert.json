@@ -1,0 +1,23 @@
+{
+  "nazov_inzeratu": "Lenovo ThinkPad X1 Carbon - Profesionálny notebook",
+  "cena": 720,
+  "mena": "EUR",
+  "popis": "Predám zachovalý notebook Lenovo ThinkPad X1 Carbon 9. generácie. Notebook je vo výbornom stave, používaný len v kancelárii. Parametre: Intel Core i5-1135G7, 16GB RAM, 512GB SSD NVMe, 14\" Full HD IPS displej, podsvietená klávesnica, čítačka odtlačkov. Batéria drží cca 8-10 hodín. V cene je originálna nabíjačka a ochranné puzdro. Dôvod predaja - prechod na MacBook. Možnosť vyskúšania pri osobnom odbere v Košiciach.",
+  "kategoria": "PC",
+  "podkategoria": "Notebooky",
+  "lokalita": {
+    "mesto": "Košice",
+    "ulica": "Hlavná",
+    "cislo_domu": "27",
+    "PSC": "04001"
+  },
+  "obrazky": [
+    "assets\\imgs\\notebook-thinkpad.jpg"
+  ],
+  "kontaktne_udaje": {
+    "meno": "Martin Kováč",
+    "email": "m.kovac@example.com",
+    "telefon": "+421903456789"
+  },
+  "heslobazar": "th1nkp4d"
+}

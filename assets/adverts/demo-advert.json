@@ -12,12 +12,14 @@
     "PSC": "81102"
   },
   "obrazky": [
-    "assets\\imgs\\demo-advert-PC.jpg"
+    "assets\\imgs\\demo-advert-PC.jpg",
+    "assets\\imgs\\PC-icon.png"
+
   ],
   "kontaktne_udaje": {
     "meno": "Peter Horváth",
     "email": "peter.horvath@example.com",
-    "telefon": "+421911234567"
+    "telefon": "+421911222567"
   },
   "heslobazar": "59jnwktq"
 }
