@@ -127,6 +127,12 @@ async function fillAdvertForm(page, advertData) {
             advertData.lokalita.PSC,
             'Location'
         );
+
+        // Handle image upload if images are specified
+        if (advertData.obrazky && advertData.obrazky.length > 0) {
+            const handleImageUpload = require('./handle-image-upload');
+            await handleImageUpload(page, advertData.obrazky);
+        }
         
         // Add a small delay after filling all fields
         await new Promise(resolve => setTimeout(resolve, 1000));
